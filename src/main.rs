@@ -14,7 +14,7 @@ fn main() {
     let input_arg = input_arg.default_value("./src/main.rs");
 
     let matches = App::new("tab-indent")
-        .version("1.0")
+        .version("1.0.0")
         .author("Lisper")
         .about("transform line-leading spaces into tabs")
         .arg(input_arg)
