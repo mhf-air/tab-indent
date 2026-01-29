@@ -32,20 +32,34 @@ fn main() {
                 .action(ArgAction::SetTrue)
                 .help("Modify the file inplace"),
         )
+        .arg(
+            Arg::new("novel-count")
+                .long("novel-count")
+                .action(ArgAction::SetTrue)
+                .help("Count words for a .chap file"),
+        )
         .get_matches();
 
     let input = matches.get_one::<String>("input").unwrap();
     let tab_width = *matches.get_one::<u8>("tab-width").unwrap();
     let inplace = *matches.get_one::<bool>("inplace").unwrap();
+    let novel_count = *matches.get_one::<bool>("novel-count").unwrap();
 
     // fmt
     let p = fs::canonicalize(PathBuf::from(input)).unwrap();
     let text = fs::read_to_string(p).unwrap();
-    let text = format_run(text, tab_width);
+
+    if novel_count {
+        let a = novel_count_run(text);
+        println!("{}", a);
+        return;
+    }
+
+    let a = format_run(text, tab_width);
     if inplace {
-        fs::write(input, text).unwrap();
+        fs::write(input, a).unwrap();
     } else {
-        println!("{}", text);
+        println!("{}", a);
     }
 }
 
@@ -120,4 +134,38 @@ fn format_run(text: String, tab_width: u8) -> String {
         r.push('\n');
     }
     r
+}
+
+/*
+count words for a .chap file
+starting from line 3
+should omit blanks and newlines, consecutive ascii characters count as 1
+but actually, just omit all ascii characters
+*/
+fn novel_count_run(text: String) -> i32 {
+    let mut r = 0;
+    let mut ascii = 0;
+
+    let mut line_count = 0;
+    let mut main_begin = false;
+
+    for ch in text.chars() {
+        if !main_begin {
+            if ch == '\n' {
+                line_count += 1;
+                if line_count == 2 {
+                    main_begin = true;
+                }
+            }
+            continue;
+        }
+
+        if ch.is_ascii() {
+            ascii += 1;
+        }
+
+        r += 1;
+    }
+
+    return r - ascii;
 }
