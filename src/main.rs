@@ -138,7 +138,7 @@ fn format_run(text: String, tab_width: u8) -> String {
 
 /*
 count words for a .chap file
-starting from line 3
+starting from the first line after title line
 should omit blanks and newlines, consecutive ascii characters count as 1
 but actually, just omit all ascii characters
 */
@@ -146,16 +146,23 @@ fn novel_count_run(text: String) -> i32 {
     let mut r = 0;
     let mut ascii = 0;
 
-    let mut line_count = 0;
+    // find the title line
+    let mut found_title = false;
+    // start from the line after the title line
     let mut main_begin = false;
 
     for ch in text.chars() {
         if !main_begin {
-            if ch == '\n' {
-                line_count += 1;
-                if line_count == 2 {
-                    main_begin = true;
+            if !found_title {
+                // skip all whitespaces
+                if ch.is_whitespace() {
+                    continue;
                 }
+                found_title = true;
+                continue;
+            }
+            if ch == '\n' {
+                main_begin = true;
             }
             continue;
         }
